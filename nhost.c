@@ -16,6 +16,7 @@
 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <pthread.h>
 
 #include "shared.h"
@@ -38,7 +39,7 @@ struct requester_cont{
     pthread_mutex_t lock;
     /* struct sockaddr_in addr[1000]; */
     /* struct shared_mem peers[1000]; */
-    struct requester peers[1000];
+    struct requester peers[100];
     int n_conn;
 };
 
@@ -94,10 +95,26 @@ void* alloc_mem(struct requester_cont* rc, struct sockaddr_in addr, int sz, int 
  * add their address to our struct
  */
 void* accept_conn_th(void* null){
+/* void accept_conn_t(){ */
     (void)null;
     struct requester_cont rc;
     init_rc(&rc);
-    int lsock = socket(AF_INET, SOCK_STREAM, 0), sock;
+    int lsock = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0), sock;
+    {
+    struct sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_port = NALLOC_PORT;
+    addr.sin_addr.s_addr = INADDR_ANY;
+
+    if(bind(lsock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in)) == -1){
+        perror("BIND");
+        return NULL;
+    }
+    if(listen(lsock, 0) == -1){
+        perror("LISTEN");
+        return NULL;
+    }
+    }
 
     struct sockaddr addr;
     struct sockaddr_in* saddr;
@@ -116,8 +133,10 @@ void* accept_conn_th(void* null){
             close(sock);
         }
     }
+    /* return NULL; */
 }
 
 int main(){
     accept_conn_th(NULL);
+    /* alloc_mem(NULL, ); */
 }
