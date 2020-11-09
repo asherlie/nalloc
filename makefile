@@ -1,10 +1,10 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -Werror -Wpedantic -pthread
+CFLAGS=-Wall -Wextra -Werror -Wpedantic -pthread -g
 
 all: nalloc
-nhost.o: nhost.c shared.h
+nhost: nhost.c shared.h
 nalloc: nalloc.c shared.h
 
 .PHONY:
 clean:
-	rm -rf nalloc *.o
+	rm -rf nhost nalloc *.o
