@@ -34,6 +34,7 @@ int _establish_connection(struct in_addr addr){
     saddr.sin_port = NALLOC_PORT;
     saddr.sin_family = AF_INET;
     int sock = socket(AF_INET, SOCK_STREAM, 0);
+
     {
     struct sockaddr_in myaddr;
     myaddr.sin_family = AF_INET;
@@ -48,12 +49,7 @@ int _establish_connection(struct in_addr addr){
         perror("BIND");
         return -1;
     }
-    /*
-     * if(listen(sock, 0) == -1){
-     *     perror("LISTEN");
-     *     return -1;
-     * }
-     */
+
     }
     if(connect(sock, (struct sockaddr*)&saddr, sizeof(struct sockaddr_in)))return -1;
     return sock;
