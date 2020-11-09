@@ -18,16 +18,23 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include "shared.h"
 
 /* client */
 struct nmem{
     int sock, entry_sz;
 };
 
-int establish_connection(struct sockaddr_in addr){
+int establish_connection(struct in_addr addr){
+    struct sockaddr_in saddr;
+    saddr.sin_addr = addr;
+    saddr.sin_port = NALLOC_PORT;
+    saddr.sin_family = AF_INET;
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     /* bind(); */
-    if(connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in)))puts("failure");
+    if(connect(sock, (struct sockaddr*)&saddr, sizeof(struct sockaddr_in)))puts("failure");
     return 0;
 }
 
@@ -48,6 +55,8 @@ void client(){
 /* client end */
 
 int main(){
-    puts("hi");
+    struct in_addr ia;
+    inet_pton(AF_INET, "192.168.0.11", &ia);
+    establish_connection(ia);
     return EXIT_SUCCESS;    
 }
