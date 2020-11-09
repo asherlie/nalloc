@@ -12,6 +12,8 @@
 #include <netinet/in.h>
 #include <pthread.h>
 
+#include "shared.h"
+
 /* stores connecters by ip and port */
 struct requester_cont{
 };
