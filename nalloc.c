@@ -24,7 +24,7 @@
 
 /* client */
 struct nmem{
-    int sock, entry_sz;
+    int sock, entry_sz, mem_id;
 };
 
 int _establish_connection(struct in_addr addr){
@@ -33,7 +33,6 @@ int _establish_connection(struct in_addr addr){
     saddr.sin_port = NALLOC_PORT;
     saddr.sin_family = AF_INET;
     int sock = socket(AF_INET, SOCK_STREAM, 0);
-    /* bind(); */
     if(connect(sock, (struct sockaddr*)&saddr, sizeof(struct sockaddr_in)))return -1;
     return sock;
 }
@@ -61,6 +60,7 @@ void client(){
 /* client end */
 
 int main(){
-    establish_connection("192.168.0.1");
+    int ash = establish_connection("192.168.0.1");
+    nalloc(1000000, 1, ash);
     return EXIT_SUCCESS;    
 }
