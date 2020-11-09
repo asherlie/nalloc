@@ -23,7 +23,7 @@
 #include "shared.h"
 
 struct shared_mem{
-    int sz, count;
+    int sz, count, mem_id;
     char* ptr;
 };
 
@@ -73,8 +73,9 @@ struct requester* add_requester(struct requester_cont* rc, struct sockaddr_in ad
 
 struct requester* find_requester(struct requester_cont* rc, struct sockaddr_in addr){
     for(int i = 0; i < rc->n_conn; ++i){
-        if(rc->peers[i].addr.sin_addr.s_addr == addr.sin_addr.s_addr &&
-           rc->peers[i].addr.sin_port == addr.sin_port)return rc->peers+i;
+        /* fprintf(stderr, "%i == %i && %i == %i\n", rc->peers[i].addr.sin_addr.s_addr, addr.sin_addr.s_addr, rc->peers[i].addr.sin_port, addr.sin_port); */
+        if(rc->peers[i].addr.sin_addr.s_addr == addr.sin_addr.s_addr/* &&
+           rc->peers[i].addr.sin_port == addr.sin_port*/)return rc->peers+i;
     }
     return NULL;
 }
@@ -87,10 +88,26 @@ void* alloc_mem(struct requester_cont* rc, struct sockaddr_in addr, int sz, int 
     }
     r->mem[r->n_allocs].sz = sz;
     r->mem[r->n_allocs].count = count;
-    void* ret = r->mem[r->n_allocs++].ptr = malloc(sz*count);
-    ++rc->next_mem_id;
+    fprintf(stderr, "nallocs: %i\n", r->n_allocs);
+    void* ret = r->mem[r->n_allocs].ptr = malloc(sz*count);
+    fprintf(stderr, "nallocs: %i\n", r->n_allocs);
+    r->mem[r->n_allocs++].mem_id = ++rc->next_mem_id;
     pthread_mutex_unlock(&rc->lock);
     return ret;
+}
+
+void rc_dump(struct requester_cont* rc){
+    pthread_mutex_lock(&rc->lock);
+    for(int i = 0; i < rc->n_conn; ++i){
+        fprintf(stderr, "%i:\n", rc->peers[i].addr.sin_addr.s_addr);
+        for(int j = 0; j < rc->peers[i].n_allocs; ++j){
+            fprintf(stderr, "  %i) {%i*%i bytes}\n", 
+                    rc->peers[i].mem[j].mem_id,
+                    rc->peers[i].mem[j].sz,
+                    rc->peers[i].mem[j].count);
+        }
+    }
+    pthread_mutex_unlock(&rc->lock);
 }
 
 int SOCK;
@@ -165,6 +182,7 @@ void* accept_conn_th(void* null){
                 fprintf(stderr, "got invalied request\n");
             }
             close(sock);
+            rc_dump(&rc);
         }
     }
     /* return NULL; */
