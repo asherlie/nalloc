@@ -64,9 +64,10 @@ void client(){
 
 /* client end */
 
-int main(){
+int main(int a, char** b){
+    if(a < 2)return 0;
     /* int ash = establish_connection("192.168.0.1"); */
-    int ash = establish_connection("0");
+    int ash = establish_connection(b[1]);
     nalloc(1000000, 1, ash);
     return EXIT_SUCCESS;    
 }
