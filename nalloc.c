@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -50,6 +51,10 @@ struct nmem nalloc(int sz, int entries, int sock){
     (void)entries;
     (void)sock;
     struct nmem ret;
+    struct nalloc_request req;
+    req.sz = sz;
+    req.count = entries;
+    printf("wrote %li bytes\n", write(sock, &req, sizeof(struct nalloc_request)));
     ret.entry_sz = sz;
     return ret;
 }
@@ -60,7 +65,8 @@ void client(){
 /* client end */
 
 int main(){
-    int ash = establish_connection("192.168.0.1");
+    /* int ash = establish_connection("192.168.0.1"); */
+    int ash = establish_connection("0");
     nalloc(1000000, 1, ash);
     return EXIT_SUCCESS;    
 }
