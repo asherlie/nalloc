@@ -95,6 +95,6 @@ int main(int a, char** b){
      * char buf[] = "hello";
      * write(ash, buf, 6);
      */
-    nalloc(1000000, 1, ash);
+    nalloc(1000, 1, ash);
     return EXIT_SUCCESS;    
 }
