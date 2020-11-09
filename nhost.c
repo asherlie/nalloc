@@ -12,6 +12,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -75,7 +76,7 @@ struct requester* find_requester(struct requester_cont* rc, struct sockaddr_in a
     return NULL;
 }
 
-void alloc_mem(struct requester_cont* rc, struct sockaddr_in addr, int sz, int count){
+void* alloc_mem(struct requester_cont* rc, struct sockaddr_in addr, int sz, int count){
     struct requester* r;
     pthread_mutex_lock(&rc->lock);
     if(!(r = find_requester(rc, addr))){
@@ -83,8 +84,9 @@ void alloc_mem(struct requester_cont* rc, struct sockaddr_in addr, int sz, int c
     }
     r->mem[r->n_allocs].sz = sz;
     r->mem[r->n_allocs].count = count;
-    r->mem[r->n_allocs++].ptr = malloc(sz*count);
+    void* ret = r->mem[r->n_allocs++].ptr = malloc(sz*count);
     pthread_mutex_unlock(&rc->lock);
+    return ret;
 }
 
 /*
@@ -93,11 +95,29 @@ void alloc_mem(struct requester_cont* rc, struct sockaddr_in addr, int sz, int c
  */
 void* accept_conn_th(void* null){
     (void)null;
+    struct requester_cont rc;
+    init_rc(&rc);
     int lsock = socket(AF_INET, SOCK_STREAM, 0), sock;
+
     struct sockaddr addr;
+    struct sockaddr_in* saddr;
+
     socklen_t addrlen;
+    struct nalloc_request request;
     while(1){
         if((sock = accept(lsock, &addr, &addrlen) != -1)){
+            puts("accepted conn");
+            if(read(sock, &request, sizeof(struct nalloc_request)) ==
+               sizeof(struct nalloc_request)){
+                printf("got request for %i bytes\n", request.sz*request.count);
+                saddr = (struct sockaddr_in*)&addr;
+                alloc_mem(&rc, *saddr, request.sz, request.count);
+            }
+            close(sock);
         }
     }
+}
+
+int main(){
+    accept_conn_th(NULL);
 }
