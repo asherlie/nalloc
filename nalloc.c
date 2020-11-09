@@ -27,15 +27,21 @@ struct nmem{
     int sock, entry_sz;
 };
 
-int establish_connection(struct in_addr addr){
+int _establish_connection(struct in_addr addr){
     struct sockaddr_in saddr;
     saddr.sin_addr = addr;
     saddr.sin_port = NALLOC_PORT;
     saddr.sin_family = AF_INET;
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     /* bind(); */
-    if(connect(sock, (struct sockaddr*)&saddr, sizeof(struct sockaddr_in)))puts("failure");
-    return 0;
+    if(connect(sock, (struct sockaddr*)&saddr, sizeof(struct sockaddr_in)))return -1;
+    return sock;
+}
+
+int establish_connection(char* ip){
+    struct in_addr ia;
+    inet_pton(AF_INET, ip, &ia);
+    return _establish_connection(ia);
 }
 
 /* sock must be a socket connection to 
@@ -55,8 +61,6 @@ void client(){
 /* client end */
 
 int main(){
-    struct in_addr ia;
-    inet_pton(AF_INET, "192.168.0.11", &ia);
-    establish_connection(ia);
+    establish_connection("192.168.0.1");
     return EXIT_SUCCESS;    
 }
