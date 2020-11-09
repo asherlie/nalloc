@@ -12,6 +12,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <unistd.h>
 
 #include <sys/socket.h>
@@ -40,11 +41,12 @@ struct requester_cont{
     /* struct sockaddr_in addr[1000]; */
     /* struct shared_mem peers[1000]; */
     struct requester peers[100];
-    int n_conn;
+    int n_conn, next_mem_id;
 };
 
 void init_rc(struct requester_cont* rc){
     pthread_mutex_init(&rc->lock, NULL);
+    rc->next_mem_id = -1;
 }
 
 void* rc_eval_th(void* rc_v){
@@ -86,10 +88,12 @@ void* alloc_mem(struct requester_cont* rc, struct sockaddr_in addr, int sz, int 
     r->mem[r->n_allocs].sz = sz;
     r->mem[r->n_allocs].count = count;
     void* ret = r->mem[r->n_allocs++].ptr = malloc(sz*count);
+    ++rc->next_mem_id;
     pthread_mutex_unlock(&rc->lock);
     return ret;
 }
 
+int SOCK;
 /*
  * wait for connections
  * add their address to our struct
@@ -99,12 +103,19 @@ void* accept_conn_th(void* null){
     (void)null;
     struct requester_cont rc;
     init_rc(&rc);
-    int lsock = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0), sock;
+    int lsock = socket(AF_INET, SOCK_STREAM, 0), sock;
+    SOCK = lsock;
     {
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
     addr.sin_port = NALLOC_PORT;
     addr.sin_addr.s_addr = INADDR_ANY;
+
+    int tr = 1;
+    if(setsockopt(lsock, SOL_SOCKET, SO_REUSEADDR, &tr, sizeof(int)) == -1){
+        perror("setsockopt()");
+        return NULL;
+    }
 
     if(bind(lsock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in)) == -1){
         perror("BIND");
@@ -121,14 +132,37 @@ void* accept_conn_th(void* null){
 
     socklen_t addrlen;
     struct nalloc_request request;
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    perror("I");
     while(1){
         if((sock = accept(lsock, &addr, &addrlen) != -1)){
-            puts("accepted conn");
+            fputs("accepted conn", stderr);
+            fprintf(stderr, "sock: %i %i %i %i\n", sock, lsock, STDOUT_FILENO, STDIN_FILENO);
+            
+            /* FILE* fp = fdopen(sock, "r"); */
+            char c[10] = {0};
+            /* fprintf(stderr, "read %li\n", read(sock, c, 10)); */
+            /* perror("read"); */
+            fprintf(stderr, "%s\n", c);
+            /* while((c = getc(fp)) != EOF)fprintf(stderr, "[%i]", c); */
+            fflush(stderr);
+            /*
+             * puts("HI");
+             * close(sock);
+             * continue;
+             */
             if(read(sock, &request, sizeof(struct nalloc_request)) ==
                sizeof(struct nalloc_request)){
-                printf("got request for %i bytes\n", request.sz*request.count);
+                fprintf(stderr, "got request for %i bytes\n", request.sz*request.count);
                 saddr = (struct sockaddr_in*)&addr;
                 alloc_mem(&rc, *saddr, request.sz, request.count);
+                write(sock, &rc.next_mem_id, sizeof(int));
+            }
+            else{
+                int x = -1;
+                write(sock, &x, sizeof(int));
+                fprintf(stderr, "got invalied request\n");
             }
             close(sock);
         }
@@ -136,7 +170,14 @@ void* accept_conn_th(void* null){
     /* return NULL; */
 }
 
+void close_sock(){
+    close(SOCK);
+    fprintf(stderr, "sock %i closed\n", SOCK);
+    exit(0);
+}
+
 int main(){
+    signal(SIGINT, close_sock);
     accept_conn_th(NULL);
     /* alloc_mem(NULL, ); */
 }
