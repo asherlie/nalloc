@@ -19,6 +19,7 @@ _Bool eval_nalloc_request(struct requester_cont* rc,
                           struct requester* r,
                           struct nalloc_request req){
     if(!r)return 0;
+    _Bool ret = 1;
     switch(req.request){
         case MEM_ALLOC:
             alloc_mem(rc, r, req.sz, req.count);
@@ -29,11 +30,9 @@ _Bool eval_nalloc_request(struct requester_cont* rc,
         case READ_MEM:
             break;
         /* in case the user isn't cooperating */
-        default:{
-            int err = -1;
-            write(r->sock, &err, sizeof(int));
+        default:
+            ret = 0;
             break;
-        }
     }
-    return 1;
+    return ret;
 }

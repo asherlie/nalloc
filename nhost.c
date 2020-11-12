@@ -130,8 +130,8 @@ void* accept_conn_th(void* null){
                 /* alloc_mem(&rc, *saddr, request.sz, request.count); */
                 /* if(write(sock, &rc.next_mem_id, sizeof(int)) == -1)perror("write"); */
             }
-            /* if we didn't read the correct amount of bytes or eval_nalloc_request()
-             * returned 0
+            /* if we didn't read the correct amount of bytes, eval_nalloc_request()
+             * returned 0, or we were sent a command not in the request enum
              */
             if(!success){
                 int x = -1;
