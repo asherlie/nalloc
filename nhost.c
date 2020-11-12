@@ -1,4 +1,10 @@
 /*
+ * TODO: allow an admin address that has a special set of commands
+ *       these commands will be able to update nalloc() size limitations
+ *       and max number of requests per IP
+ */
+
+/*
  * TODO: use 1000 as a hard limit - don't dynamically alloc
  * handle this safely
  */
@@ -148,7 +154,7 @@ void* accept_conn_th(void* null){
 
 void close_sock(){
     close(SOCK);
-    fprintf(stderr, "sock %i closed\n", SOCK);
+    fprintf(stderr, "\nsock %i closed. exiting safely.\n", SOCK);
     exit(0);
 }
 

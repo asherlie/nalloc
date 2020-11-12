@@ -11,7 +11,6 @@ void* alloc_mem(struct requester_cont* rc, struct requester* r, int sz, int coun
     r->mem[r->n_allocs].count = count;
     void* ret = r->mem[r->n_allocs].ptr = malloc(sz*count);
     r->mem[r->n_allocs++].mem_id = ++rc->next_mem_id;
-    pthread_mutex_unlock(&rc->lock);
     return ret;
 }
 

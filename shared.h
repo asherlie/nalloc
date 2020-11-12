@@ -6,5 +6,8 @@
 struct nalloc_request{
     enum req_type{MEM_ALLOC, READ_MEM, WRITE_MEM}request;
     int sz, count;
+
+    /* used for reads and writes */
+    int index;
 };
 #endif
