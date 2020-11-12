@@ -88,9 +88,7 @@ void* alloc_mem(struct requester_cont* rc, struct sockaddr_in addr, int sz, int 
     }
     r->mem[r->n_allocs].sz = sz;
     r->mem[r->n_allocs].count = count;
-    fprintf(stderr, "nallocs: %i\n", r->n_allocs);
     void* ret = r->mem[r->n_allocs].ptr = malloc(sz*count);
-    fprintf(stderr, "nallocs: %i\n", r->n_allocs);
     r->mem[r->n_allocs++].mem_id = ++rc->next_mem_id;
     pthread_mutex_unlock(&rc->lock);
     return ret;
@@ -120,7 +118,9 @@ void* accept_conn_th(void* null){
     (void)null;
     struct requester_cont rc;
     init_rc(&rc);
-    int lsock = socket(AF_INET, SOCK_STREAM, 0), sock;
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    int lsock = socket(AF_INET, SOCK_STREAM, 0), sock = -1;
     SOCK = lsock;
     {
     struct sockaddr_in addr;
@@ -144,13 +144,15 @@ void* accept_conn_th(void* null){
     }
     }
 
-    struct sockaddr addr;
+    struct sockaddr addr = {0};
     struct sockaddr_in* saddr;
 
     socklen_t addrlen;
     struct nalloc_request request;
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
+    /*
+     * close(STDIN_FILENO);
+     * close(STDOUT_FILENO);
+     */
     perror("I");
     while(1){
         if((sock = accept(lsock, &addr, &addrlen) != -1)){
@@ -158,28 +160,43 @@ void* accept_conn_th(void* null){
             fprintf(stderr, "sock: %i %i %i %i\n", sock, lsock, STDOUT_FILENO, STDIN_FILENO);
             
             /* FILE* fp = fdopen(sock, "r"); */
+            #if 0
             char c[10] = {0};
             /* fprintf(stderr, "read %li\n", read(sock, c, 10)); */
             /* perror("read"); */
             fprintf(stderr, "%s\n", c);
             /* while((c = getc(fp)) != EOF)fprintf(stderr, "[%i]", c); */
             fflush(stderr);
+            #endif
+
             /*
              * puts("HI");
              * close(sock);
              * continue;
              */
-            if(read(sock, &request, sizeof(struct nalloc_request)) ==
+
+            /*
+             * need to add a request type flag
+             * have to be able to use mem id and request a read or a write
+             * to a segment of memory
+             * write(mem, offset, len, data)
+             * read(mem, offset, len)
+             */
+
+            int nbb;
+            if((nbb = read(sock, &request, sizeof(struct nalloc_request))) ==
                sizeof(struct nalloc_request)){
                 fprintf(stderr, "got request for %i bytes\n", request.sz*request.count);
                 saddr = (struct sockaddr_in*)&addr;
                 alloc_mem(&rc, *saddr, request.sz, request.count);
-                write(sock, &rc.next_mem_id, sizeof(int));
+                if(write(sock, &rc.next_mem_id, sizeof(int)) == -1)perror("write");
             }
             else{
                 int x = -1;
-                write(sock, &x, sizeof(int));
+                if(write(sock, &x, sizeof(int)) == -1)perror("write");
                 fprintf(stderr, "got invalied request\n");
+                perror("HI");
+                fprintf(stderr, "ad %i\n", nbb);
             }
             close(sock);
             rc_dump(&rc);
@@ -187,6 +204,7 @@ void* accept_conn_th(void* null){
     }
     /* return NULL; */
 }
+
 
 void close_sock(){
     close(SOCK);

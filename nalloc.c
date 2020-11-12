@@ -72,6 +72,7 @@ struct nmem nalloc(int sz, int entries, int sock){
     printf("wrote %li bytes\n", write(sock, &req, sizeof(struct nalloc_request)));
     ret.entry_sz = sz;
     ret.count = entries;
+    ret.mem_id = -1;
     /* TODO: make this non blocking */
     read(sock, &ret.mem_id, sizeof(int));
     printf("assigned mem_id: %i\n", ret.mem_id);
