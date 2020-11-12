@@ -67,6 +67,7 @@ int establish_connection(char* ip){
 struct nmem nalloc(int sz, int entries, int sock){
     struct nmem ret;
     struct nalloc_request req;
+    req.request = MEM_ALLOC;
     req.sz = sz;
     req.count = entries;
     printf("wrote %li bytes\n", write(sock, &req, sizeof(struct nalloc_request)));
@@ -92,6 +93,6 @@ int main(int a, char** b){
      * char buf[] = "hello";
      * write(ash, buf, 6);
      */
-    nalloc(1000, 1, ash);
+    nalloc(10, 1, ash);
     return EXIT_SUCCESS;    
 }
