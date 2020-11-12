@@ -21,23 +21,8 @@
 #include <pthread.h>
 
 #include "shared.h"
-#include "rc.h"
-
-
-
-void* alloc_mem(struct requester_cont* rc, struct sockaddr_in addr, int sz, int count){
-    struct requester* r;
-    pthread_mutex_lock(&rc->lock);
-    if(!(r = find_requester(rc, addr))){
-        r = add_requester(rc, addr);
-    }
-    r->mem[r->n_allocs].sz = sz;
-    r->mem[r->n_allocs].count = count;
-    void* ret = r->mem[r->n_allocs].ptr = malloc(sz*count);
-    r->mem[r->n_allocs++].mem_id = ++rc->next_mem_id;
-    pthread_mutex_unlock(&rc->lock);
-    return ret;
-}
+#include "eval_requests.h"
+/* #include "rc.h" */
 
 int SOCK;
 
@@ -115,15 +100,40 @@ void* accept_conn_th(void* null){
              * read(mem, offset, len)
              */
 
+            _Bool success;
             int nbb;
-            if((nbb = read(sock, &request, sizeof(struct nalloc_request))) ==
-               sizeof(struct nalloc_request)){
+            if((success = ((nbb = read(sock, &request, sizeof(struct nalloc_request))) ==
+               sizeof(struct nalloc_request)))){
                 fprintf(stderr, "got request for %i bytes\n", request.sz*request.count);
                 saddr = (struct sockaddr_in*)&addr;
-                alloc_mem(&rc, *saddr, request.sz, request.count);
-                if(write(sock, &rc.next_mem_id, sizeof(int)) == -1)perror("write");
+                /* should we add_requester here if needed and have eval_nalloc_request() 
+                 * take in a struct requester
+                 * if so, we'll need to check if request is MEM_ALLOC
+                 * this will let us avoid passing address to anything in eval_requests.c
+                 * would be nice to keep abstraction
+                 */
+                /* if we're allocating new memory we need to ensure
+                 * that the struct requester* being passed to eval_nalloc_request()
+                 * is valid
+                 */
+                pthread_mutex_lock(&rc.lock);
+                struct requester* r = find_requester(&rc, *saddr);
+                if(request.request == MEM_ALLOC && !r){
+                    r = add_requester(&rc, *saddr);
+                }
+                if(r){
+                    r->sock = sock;
+                    success = eval_nalloc_request(&rc, r, request);
+                }
+                else success = 0;
+                pthread_mutex_unlock(&rc.lock);
+                /* alloc_mem(&rc, *saddr, request.sz, request.count); */
+                /* if(write(sock, &rc.next_mem_id, sizeof(int)) == -1)perror("write"); */
             }
-            else{
+            /* if we didn't read the correct amount of bytes or eval_nalloc_request()
+             * returned 0
+             */
+            if(!success){
                 int x = -1;
                 if(write(sock, &x, sizeof(int)) == -1)perror("write");
                 fprintf(stderr, "got invalied request\n");
