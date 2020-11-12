@@ -47,7 +47,9 @@ void rc_dump(struct requester_cont* rc){
     char buf[INET_ADDRSTRLEN+1];
     for(int i = 0; i < rc->n_conn; ++i){
         /* fprintf(stderr, "%i:\n", rc->peers[i].addr.sin_addr.s_addr); */
-        fprintf(stderr, "%s:\n", inet_ntop(AF_INET, &rc->peers[i].addr.sin_addr, buf, INET_ADDRSTRLEN));
+        fprintf(stderr, "%s:\n", 
+                                 inet_ntop(AF_INET, &rc->peers[i].addr.sin_addr,
+                                           buf, INET_ADDRSTRLEN));
         for(int j = 0; j < rc->peers[i].n_allocs; ++j){
             fprintf(stderr, "  %i) {%i*%i bytes}\n", 
                     rc->peers[i].mem[j].mem_id,
