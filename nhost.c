@@ -137,8 +137,6 @@ void* accept_conn_th(void* null){
                 int x = -1;
                 if(write(sock, &x, sizeof(int)) == -1)perror("write");
                 fprintf(stderr, "got invalied request\n");
-                perror("HI");
-                fprintf(stderr, "ad %i\n", nbb);
             }
             close(sock);
             rc_dump(&rc);
