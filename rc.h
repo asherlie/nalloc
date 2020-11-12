@@ -12,6 +12,9 @@ struct requester{
     struct sockaddr_in addr;
     int n_allocs;
     struct shared_mem mem[1000];
+
+    /* this is set before a call to eval_nalloc_request() */
+    int sock;
     /* char* mem[1000]; */
 };
 
