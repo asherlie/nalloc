@@ -31,4 +31,5 @@ void init_rc(struct requester_cont* rc);
 void* rc_eval_th(void* rc_v);
 struct requester* add_requester(struct requester_cont* rc, struct sockaddr_in addr);
 struct requester* find_requester(struct requester_cont* rc, struct sockaddr_in addr);
+struct shared_mem* find_mem_chunk(struct requester* r, int mem_id);
 void rc_dump(struct requester_cont* rc);

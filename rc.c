@@ -42,6 +42,11 @@ struct requester* find_requester(struct requester_cont* rc, struct sockaddr_in a
     return NULL;
 }
 
+struct shared_mem* find_mem_chunk(struct requester* r, int mem_id){
+    if(r->n_allocs <= mem_id)return NULL;
+    return r->mem+mem_id;
+}
+
 void rc_dump(struct requester_cont* rc){
     pthread_mutex_lock(&rc->lock);
     char buf[INET_ADDRSTRLEN+1];

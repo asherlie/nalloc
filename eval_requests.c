@@ -24,8 +24,16 @@ _Bool eval_nalloc_request(struct requester_cont* rc,
             alloc_mem(rc, r, req.sz, req.count);
             if(write(r->sock, &rc->next_mem_id, sizeof(int)) == -1)perror("write");
             break;
-        default:
+        case WRITE_MEM:
             break;
+        case READ_MEM:
+            break;
+        /* in case the user isn't cooperating */
+        default:{
+            int err = -1;
+            write(r->sock, &err, sizeof(int));
+            break;
+        }
     }
     return 1;
 }
