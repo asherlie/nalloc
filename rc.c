@@ -8,6 +8,7 @@
 
 void init_rc(struct requester_cont* rc){
     pthread_mutex_init(&rc->lock, NULL);
+    rc->n_conn = 0;
     rc->next_mem_id = -1;
 }
 
