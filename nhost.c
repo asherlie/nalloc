@@ -74,7 +74,7 @@ void* accept_conn_th(void* null){
     struct sockaddr addr = {0};
     struct sockaddr_in* saddr;
 
-    socklen_t addrlen;
+    socklen_t addrlen = sizeof(struct sockaddr_in);
     struct nalloc_request request;
     /*
      * close(STDIN_FILENO);
@@ -83,8 +83,11 @@ void* accept_conn_th(void* null){
     perror("I");
     while(1){
         if((sock = accept(lsock, &addr, &addrlen) != -1)){
-            fputs("accepted conn", stderr);
-            fprintf(stderr, "sock: %i %i %i %i\n", sock, lsock, STDOUT_FILENO, STDIN_FILENO);
+            /* fputs("accepted conn", stderr); */
+            /* fprintf(stderr, "sock: %i %i %i %i\n", sock, lsock, STDOUT_FILENO, STDIN_FILENO); */
+            struct sockaddr_in ff = *((struct sockaddr_in*)&addr);
+            fprintf(stderr, "addr %i len %i sin: %li\n",
+                            ff.sin_addr.s_addr, addrlen, sizeof(struct sockaddr_in));
             
             /* FILE* fp = fdopen(sock, "r"); */
             #if 0
