@@ -22,6 +22,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <signal.h>
 #include <unistd.h>
 
@@ -71,7 +72,9 @@ void* accept_conn_th(void* null){
     }
     }
 
-    struct sockaddr addr = {0};
+    struct sockaddr addr;
+    memset(&addr, 0, sizeof(struct sockaddr));
+
     struct sockaddr_in* saddr;
 
     socklen_t addrlen = sizeof(struct sockaddr_in);
