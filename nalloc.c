@@ -80,6 +80,22 @@ struct nmem nalloc(int sz, int entries, int sock){
     return ret;
 }
 
+#if !1
+we need the following functionality which can all be abstractions of
+write_mem() and read_mem():
+    nind(type, struct nmem, int index);
+        this works like the [] operator and will be #defined
+        can i convert void* to float inlined?
+        i can have a function that will return a (char/void)*
+        #define nind(type, nmem, index) read_nm(nmem, sizeof(type)*index, *((type*)((sizeof(type)*index)+sizeof(type))))
+
+    void nemcpy(struct nmem src, struct nmem dest, int nbytes);
+    void lnemcpy(void* src, struct nmem dest, int nbytes);
+    void nemlcpy(struct nmem src, void* dest, int nbytes);
+    void nemmove(struct nmem src, struct nmem dest, int nbytes);
+    _Bool nemcmp(struct nmem a, struct nmem b);
+#endif
+
 void client(){
 }
 
