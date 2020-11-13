@@ -1,4 +1,8 @@
 /*
+ * TODO: make this a daemon that can be enabled/disabled and
+ *       started/stopped from systemd!
+ */
+/*
  * TODO: allow an admin address that has a special set of commands
  *       these commands will be able to update nalloc() size limitations
  *       and max number of requests per IP
