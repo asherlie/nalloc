@@ -1,4 +1,4 @@
-/*duet 3d m408
+/*
  * TODO: enable writing to disk also
  *           requesting a FILE* on another machine
  *           fopen() abstraction
@@ -81,6 +81,8 @@ struct nmem nalloc(int sz, int entries, int sock){
 }
 
 #if !1
+we need nfree()
+
 we need the following functionality which can all be abstractions of
 write_mem() and read_mem():
     nind(type, struct nmem, int index);
@@ -109,6 +111,6 @@ int main(int a, char** b){
      * char buf[] = "hello";
      * write(ash, buf, 6);
      */
-    nalloc(10, 1, ash);
+    nalloc(20, sizeof(int), ash);
     return EXIT_SUCCESS;    
 }

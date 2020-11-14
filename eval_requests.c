@@ -22,6 +22,11 @@ i can maybe make a #define on the nalloc() side to hide this
 #define NALLOC(type, addr, nbytes) nalloc(addr, sizeof(type)*nbytes)
 #endif
 
+_Bool move_mem(struct shared_mem* mem){
+    (void)mem;
+    return 1;
+}
+
 /* should len be in terms of bytes or n_elements
  * for now, like memcpy(), it's done in bytes
  */
@@ -55,6 +60,8 @@ _Bool eval_nalloc_request(struct requester_cont* rc,
         case WRITE_MEM:
             break;
         case READ_MEM:
+            break;
+        case FREE_MEM:
             break;
         /* in case the user isn't cooperating */
         default:
