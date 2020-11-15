@@ -84,7 +84,7 @@ struct nmem nalloc(int sz, int entries, int sock){
     return ret;
 }
 
-#if !1
+#if 0
 TODO: mem_id should be assigned on a per requester basis
 they have different
 
@@ -105,7 +105,17 @@ write_mem() and read_mem():
     _Bool nemcmp(struct nmem a, struct nmem b);
 #endif
 
-void client(){
+void nemlcpy(void* src, struct nmem dest, int offset, int nbytes, int sock){
+    struct nalloc_request req;
+    req.request = WRITE_MEM;
+    req.sz = nbytes;
+    req.index = offset;
+
+    /* mem_id isn't used for nalloc() */
+    req.mem_id = dest.mem_id;
+    printf("wrote %li bytes\n", write(sock, &req, sizeof(struct nalloc_request)));
+    printf("wrote %li bytes\n", write(sock, src, nbytes));
+    /* req. */
 }
 
 /* client end */
