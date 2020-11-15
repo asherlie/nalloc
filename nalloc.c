@@ -111,10 +111,10 @@ void nemlcpy(void* src, struct nmem dest, int offset, int nbytes, int sock){
     req.sz = nbytes;
     req.index = offset;
 
-    /* mem_id isn't used for nalloc() */
     req.mem_id = dest.mem_id;
-    printf("wrote %li bytes\n", write(sock, &req, sizeof(struct nalloc_request)));
-    printf("wrote %li bytes\n", write(sock, src, nbytes));
+
+    printf("req: wrote %li bytes\n", write(sock, &req, sizeof(struct nalloc_request)));
+    printf("dat: wrote %li bytes\n", write(sock, src, nbytes));
     /* req. */
 }
 
@@ -128,6 +128,10 @@ int main(int a, char** b){
      * char buf[] = "hello";
      * write(ash, buf, 6);
      */
-    nalloc(20, sizeof(int), ash);
+    struct nmem mem = nalloc(20, sizeof(int), ash);
+    char buf[] = "asher";
+
+    ash = establish_connection(b[1]);
+    nemlcpy(buf, mem, 0, 6, ash);
     return EXIT_SUCCESS;    
 }
