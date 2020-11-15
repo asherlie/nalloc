@@ -60,6 +60,7 @@ _Bool eval_nalloc_request(struct requester_cont* rc,
             alloc_mem(rc, r, req.sz);
             if(write(r->sock, &rc->next_mem_id, sizeof(int)) == -1)perror("MA_WRITE");
             break;
+        case READ_MEM:
         case WRITE_MEM:{
             /* reading from requester before writing it to mem */
             struct shared_mem* mem = find_mem_chunk(r, req.mem_id); 
@@ -68,11 +69,16 @@ _Bool eval_nalloc_request(struct requester_cont* rc,
                 ret = 0;
                 break;
             }
-            if(read(r->sock, mem->ptr, req.sz) != req.sz)ret = 0;
+            /* WRITE_MEM */
+            if(req.request == WRITE_MEM){
+                if(read(r->sock, mem->ptr+req.index, req.sz) != req.sz)ret = 0;
+            }
+            /* READ_MEM */
+            else{
+                if(write(r->sock, mem->ptr+req.index, req.sz) != req.sz)ret = 0;
+            }
             break;
         }
-        case READ_MEM:
-            break;
         case FREE_MEM:
             /* free(r->kl); */
             /* if(write(r->sock, ) == -1)perror("FM_WRITE"); */

@@ -85,6 +85,9 @@ struct nmem nalloc(int sz, int entries, int sock){
 }
 
 #if 0
+TODO: every command should write 4 bytes after completion
+not just failed commands writing -1
+
 TODO: mem_id should be assigned on a per requester basis
 they have different
 
@@ -118,6 +121,18 @@ void nemlcpy(void* src, struct nmem dest, int offset, int nbytes, int sock){
     /* req. */
 }
 
+void lnemcpy(struct nmem src, void* dest, int offset, int nbytes, int sock){
+    struct nalloc_request req;
+    req.request = READ_MEM;
+    req.sz = nbytes;
+    req.index = offset;
+
+    req.mem_id = src.mem_id;
+
+    printf("req: wrote %li bytes\n", write(sock, &req, sizeof(struct nalloc_request)));
+    printf("read %li bytes\n", read(sock, dest, nbytes));
+}
+
 /* client end */
 
 int main(int a, char** b){
@@ -133,5 +148,10 @@ int main(int a, char** b){
 
     ash = establish_connection(b[1]);
     nemlcpy(buf, mem, 0, 6, ash);
+
+    char read_buf[100] = {0};
+    ash = establish_connection(b[1]);
+    lnemcpy(mem, read_buf, 0, 6, ash);
+    printf("read: \"%s\"\n", read_buf);
     return EXIT_SUCCESS;    
 }
