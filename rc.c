@@ -57,10 +57,10 @@ void rc_dump(struct requester_cont* rc){
                                  inet_ntop(AF_INET, &rc->peers[i].addr.sin_addr,
                                            buf, INET_ADDRSTRLEN));
         for(int j = 0; j < rc->peers[i].n_allocs; ++j){
-            fprintf(stderr, "  %i) {%i*%i bytes}\n", 
+            fprintf(stderr, "  %i) {%i bytes}\n", 
                     rc->peers[i].mem[j].mem_id,
-                    rc->peers[i].mem[j].sz,
-                    rc->peers[i].mem[j].count);
+                    rc->peers[i].mem[j].sz/*,
+                    rc->peers[i].mem[j].count*/);
         }
     }
     pthread_mutex_unlock(&rc->lock);

@@ -120,7 +120,7 @@ void* accept_conn_th(void* null){
             int nbb;
             if((success = ((nbb = read(sock, &request, sizeof(struct nalloc_request))) ==
                sizeof(struct nalloc_request)))){
-                fprintf(stderr, "got request for %i bytes\n", request.sz*request.count);
+                fprintf(stderr, "got request for %i bytes\n", request.sz);
                 saddr = (struct sockaddr_in*)&addr;
                 /* should we add_requester here if needed and have eval_nalloc_request() 
                  * take in a struct requester

@@ -7,10 +7,11 @@
 #include "eval_requests.h"
 /* all functions in this file must be called with rc->lock acquired */
 
-void* alloc_mem(struct requester_cont* rc, struct requester* r, int sz, int count){
+void* alloc_mem(struct requester_cont* rc, struct requester* r, int sz){
     r->mem[r->n_allocs].sz = sz;
-    r->mem[r->n_allocs].count = count;
-    void* ret = r->mem[r->n_allocs].ptr = malloc(sz*count);
+    /* r->mem[r->n_allocs].count = count; */
+    /* void* ret = r->mem[r->n_allocs].ptr = malloc(sz*count); */
+    void* ret = r->mem[r->n_allocs].ptr = malloc(sz);
     r->mem[r->n_allocs++].mem_id = ++rc->next_mem_id;
     return ret;
 }
@@ -31,7 +32,8 @@ _Bool move_mem(struct shared_mem* mem){
  * for now, like memcpy(), it's done in bytes
  */
 _Bool write_mem(struct shared_mem* mem, int index, int len, void* src){
-    if(len*mem->sz+ index*mem->sz >= mem->sz * mem->count)return 0;
+    /* if(len*mem->sz+ index*mem->sz >= mem->sz * mem->count)return 0; */
+    if(len*mem->sz+ index*mem->sz >= mem->sz)return 0;
     /* memcpy(mem->ptr+index, src, len*mem->sz); */
     memcpy(mem->ptr+index, src, len);
     return 1;
@@ -39,7 +41,8 @@ _Bool write_mem(struct shared_mem* mem, int index, int len, void* src){
 
 /* read_mem() reads len bytes from index and writes it to r->sock */
 _Bool read_mem(struct shared_mem* mem, struct requester* r, int index, int len){
-    if(len+index >= mem->sz * mem->count)return 0;
+    /* if(len+index >= mem->sz * mem->count)return 0; */
+    if(len+index >= mem->sz)return 0;
     return write(r->sock, mem->ptr+(index), len) == len*mem->sz;
 }
 
@@ -54,14 +57,26 @@ _Bool eval_nalloc_request(struct requester_cont* rc,
      */
     switch(req.request){
         case MEM_ALLOC:
-            alloc_mem(rc, r, req.sz, req.count);
-            if(write(r->sock, &rc->next_mem_id, sizeof(int)) == -1)perror("write");
+            alloc_mem(rc, r, req.sz);
+            if(write(r->sock, &rc->next_mem_id, sizeof(int)) == -1)perror("MA_WRITE");
             break;
-        case WRITE_MEM:
+        case WRITE_MEM:{
+            /* reading from requester before writing it to mem */
+            struct shared_mem* mem = find_mem_chunk(r, req.mem_id); 
+            /* req.sz in a WRITE_MEM request refers to length of the write */
+            if(!mem || mem->sz <= req.index+req.sz){
+                ret = 0;
+                break;
+            }
+            if(read(r->sock, mem->ptr, req.sz) != req.sz)ret = 0;
+            /* write_mem(); */
             break;
+        }
         case READ_MEM:
             break;
         case FREE_MEM:
+            /* free(r->kl); */
+            /* if(write(r->sock, ) == -1)perror("FM_WRITE"); */
             break;
         /* in case the user isn't cooperating */
         default:

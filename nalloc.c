@@ -68,8 +68,12 @@ struct nmem nalloc(int sz, int entries, int sock){
     struct nmem ret;
     struct nalloc_request req;
     req.request = MEM_ALLOC;
-    req.sz = sz;
-    req.count = entries;
+    req.sz = sz*entries;
+
+    /* mem_id isn't used for nalloc() */
+    req.mem_id = -1;
+
+    /* req.count = entries; */
     printf("wrote %li bytes\n", write(sock, &req, sizeof(struct nalloc_request)));
     ret.entry_sz = sz;
     ret.count = entries;
@@ -81,6 +85,9 @@ struct nmem nalloc(int sz, int entries, int sock){
 }
 
 #if !1
+TODO: mem_id should be assigned on a per requester basis
+they have different
+
 we need nfree()
 
 we need the following functionality which can all be abstractions of

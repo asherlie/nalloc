@@ -3,7 +3,8 @@
 
 /* this file defines structs for the host to manage requesters */
 struct shared_mem{
-    int sz, count, mem_id;
+    // int sz, count, mem_id;
+    int sz, mem_id;
     char* ptr;
 };
 
