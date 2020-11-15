@@ -88,9 +88,11 @@ void* accept_conn_th(void* null){
         if((sock = accept(lsock, &addr, &addrlen) != -1)){
             /* fputs("accepted conn", stderr); */
             /* fprintf(stderr, "sock: %i %i %i %i\n", sock, lsock, STDOUT_FILENO, STDIN_FILENO); */
-            struct sockaddr_in ff = *((struct sockaddr_in*)&addr);
-            fprintf(stderr, "addr %i len %i sin: %li\n",
-                            ff.sin_addr.s_addr, addrlen, sizeof(struct sockaddr_in));
+            /* struct sockaddr_in ff = *((struct sockaddr_in*)&addr); */
+            /*
+             * fprintf(stderr, "addr %i len %i sin: %li\n",
+             *                 ff.sin_addr.s_addr, addrlen, sizeof(struct sockaddr_in));
+             */
             
             /* FILE* fp = fdopen(sock, "r"); */
             #if 0
@@ -120,7 +122,7 @@ void* accept_conn_th(void* null){
             int nbb;
             if((success = ((nbb = read(sock, &request, sizeof(struct nalloc_request))) ==
                sizeof(struct nalloc_request)))){
-                fprintf(stderr, "got request for %i bytes\n", request.sz);
+                /* fprintf(stderr, "got request for %i bytes\n", request.sz); */
                 saddr = (struct sockaddr_in*)&addr;
                 /* should we add_requester here if needed and have eval_nalloc_request() 
                  * take in a struct requester
@@ -155,7 +157,7 @@ void* accept_conn_th(void* null){
                 fprintf(stderr, "got invalied request\n");
             }
             close(sock);
-            rc_dump(&rc);
+            /* rc_dump(&rc); */
         }
     }
     /* return NULL; */
