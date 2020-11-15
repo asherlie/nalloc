@@ -49,7 +49,7 @@ struct shared_mem* find_mem_chunk(struct requester* r, int mem_id){
 }
 
 void rc_dump(struct requester_cont* rc){
-    pthread_mutex_lock(&rc->lock);
+    /* pthread_mutex_lock(&rc->lock); */
     char buf[INET_ADDRSTRLEN+1];
     for(int i = 0; i < rc->n_conn; ++i){
         /* fprintf(stderr, "%i:\n", rc->peers[i].addr.sin_addr.s_addr); */
@@ -63,5 +63,5 @@ void rc_dump(struct requester_cont* rc){
                     rc->peers[i].mem[j].count*/);
         }
     }
-    pthread_mutex_unlock(&rc->lock);
+    /* pthread_mutex_unlock(&rc->lock); */
 }
