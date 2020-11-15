@@ -69,7 +69,6 @@ _Bool eval_nalloc_request(struct requester_cont* rc,
                 break;
             }
             if(read(r->sock, mem->ptr, req.sz) != req.sz)ret = 0;
-            /* write_mem(); */
             break;
         }
         case READ_MEM:
