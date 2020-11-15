@@ -20,6 +20,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <signal.h>
 
 #include "shared.h"
 
@@ -79,7 +80,7 @@ struct nmem nalloc(int sz, int entries, int sock){
     ret.count = entries;
     ret.mem_id = -1;
     /* TODO: make this non blocking */
-    read(sock, &ret.mem_id, sizeof(int));
+    if(read(sock, &ret.mem_id, sizeof(int)) != sizeof(int))ret.mem_id = -1;
     printf("assigned mem_id: %i\n", ret.mem_id);
     return ret;
 }
@@ -116,9 +117,8 @@ void nemlcpy(void* src, struct nmem dest, int offset, int nbytes, int sock){
 
     req.mem_id = dest.mem_id;
 
-    printf("req: wrote %li bytes\n", write(sock, &req, sizeof(struct nalloc_request)));
-    printf("dat: wrote %li bytes\n", write(sock, src, nbytes));
-    /* req. */
+    printf("WM: wrote %li bytes\n", write(sock, &req, sizeof(struct nalloc_request)));
+    printf("WM: wrote %li bytes\n", write(sock, src, nbytes));
 }
 
 void lnemcpy(struct nmem src, void* dest, int offset, int nbytes, int sock){
@@ -129,14 +129,15 @@ void lnemcpy(struct nmem src, void* dest, int offset, int nbytes, int sock){
 
     req.mem_id = src.mem_id;
 
-    printf("req: wrote %li bytes\n", write(sock, &req, sizeof(struct nalloc_request)));
-    printf("read %li bytes\n", read(sock, dest, nbytes));
+    printf("RM: wrote %li bytes\n", write(sock, &req, sizeof(struct nalloc_request)));
+    printf("RM: read  %li bytes\n", read(sock, dest, nbytes));
 }
 
 /* client end */
 
 int main(int a, char** b){
     if(a < 2)return 0;
+    signal(SIGPIPE, SIG_IGN);
     /* int ash = establish_connection("192.168.0.1"); */
     int ash = establish_connection(b[1]);
     /*
@@ -144,14 +145,40 @@ int main(int a, char** b){
      * write(ash, buf, 6);
      */
     struct nmem mem = nalloc(20, sizeof(int), ash);
-    char buf[] = "asher";
+    char buf[] = "asher", buf1[] = "ASHER", buf2[] = "ETERI", buf3[] = "eteri";
 
     ash = establish_connection(b[1]);
     nemlcpy(buf, mem, 0, 6, ash);
 
-    char read_buf[100] = {0};
+    char read_buf[100];
+
+    memset(read_buf, 0, 100);
     ash = establish_connection(b[1]);
-    lnemcpy(mem, read_buf, 0, 6, ash);
-    printf("read: \"%s\"\n", read_buf);
+    lnemcpy(mem, read_buf, 0, 5, ash);
+    printf("Read: \"%s\"\n", read_buf);
+
+    ash = establish_connection(b[1]);
+    nemlcpy(buf1, mem, 0, 6, ash);
+
+    memset(read_buf, 0, 100);
+    ash = establish_connection(b[1]);
+    lnemcpy(mem, read_buf, 0, 5, ash);
+    printf("rEad: \"%s\"\n", read_buf);
+
+    ash = establish_connection(b[1]);
+    nemlcpy(buf2, mem, 0, 6, ash);
+
+    memset(read_buf, 0, 100);
+    ash = establish_connection(b[1]);
+    lnemcpy(mem, read_buf, 0, 5, ash);
+    printf("reAd: \"%s\"\n", read_buf);
+
+    ash = establish_connection(b[1]);
+    nemlcpy(buf3, mem, 0, 6, ash);
+
+    memset(read_buf, 0, 100);
+    ash = establish_connection(b[1]);
+    lnemcpy(mem, read_buf, 0, 5, ash);
+    printf("reaD: \"%s\"\n", read_buf);
     return EXIT_SUCCESS;    
 }
