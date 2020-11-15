@@ -59,6 +59,7 @@ _Bool eval_nalloc_request(struct requester_cont* rc,
         case MEM_ALLOC:
             alloc_mem(rc, r, req.sz);
             if(write(r->sock, &rc->next_mem_id, sizeof(int)) == -1)perror("MA_WRITE");
+            rc_dump(rc);
             break;
         case READ_MEM:
         case WRITE_MEM:{
@@ -70,11 +71,18 @@ _Bool eval_nalloc_request(struct requester_cont* rc,
                 break;
             }
             /* WRITE_MEM */
+            /* fprintf(stderr, "sz %i id %i index %i\n", req.sz, req.mem_id, req.index); */
             if(req.request == WRITE_MEM){
                 if(read(r->sock, mem->ptr+req.index, req.sz) != req.sz)ret = 0;
+                /* fprintf(stderr, "WRITE_MEM %i\n", ret); */
+                /*
+                 * fprintf(stderr, "got a write request: \"%s\"\n", (char*)mem->ptr);
+                 * fprintf(stderr, "read %s\n", mem->ptr);
+                 */
             }
             /* READ_MEM */
             else{
+                /* fprintf(stderr, "READ_MEM\n"); */
                 if(write(r->sock, mem->ptr+req.index, req.sz) != req.sz)ret = 0;
             }
             break;
@@ -88,5 +96,6 @@ _Bool eval_nalloc_request(struct requester_cont* rc,
             ret = 0;
             break;
     }
+    /* fputs("RETURNING\n", stderr); */
     return ret;
 }
