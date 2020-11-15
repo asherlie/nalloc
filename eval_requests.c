@@ -66,7 +66,7 @@ _Bool eval_nalloc_request(struct requester_cont* rc,
             /* reading from requester before writing it to mem */
             struct shared_mem* mem = find_mem_chunk(r, req.mem_id); 
             /* req.sz in a WRITE_MEM request refers to length of the write */
-            if(!mem || mem->sz <= req.index+req.sz){
+            if(!mem || mem->sz < req.index+req.sz){
                 ret = 0;
                 break;
             }
