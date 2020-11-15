@@ -109,7 +109,7 @@ write_mem() and read_mem():
     _Bool nemcmp(struct nmem a, struct nmem b);
 #endif
 
-void nemlcpy(void* src, struct nmem dest, int offset, int nbytes, int sock){
+_Bool nemlcpy(void* src, struct nmem dest, int offset, int nbytes, int sock){
     struct nalloc_request req;
     req.request = WRITE_MEM;
     req.sz = nbytes;
@@ -117,11 +117,11 @@ void nemlcpy(void* src, struct nmem dest, int offset, int nbytes, int sock){
 
     req.mem_id = dest.mem_id;
 
-    printf("WM: wrote %li bytes\n", write(sock, &req, sizeof(struct nalloc_request)));
-    printf("WM: wrote %li bytes\n", write(sock, src, nbytes));
+    return write(sock, &req, sizeof(struct nalloc_request)) == sizeof(struct nalloc_request) &&
+           write(sock, src, nbytes) == nbytes;
 }
 
-void lnemcpy(struct nmem src, void* dest, int offset, int nbytes, int sock){
+_Bool lnemcpy(struct nmem src, void* dest, int offset, int nbytes, int sock){
     struct nalloc_request req;
     req.request = READ_MEM;
     req.sz = nbytes;
@@ -129,8 +129,8 @@ void lnemcpy(struct nmem src, void* dest, int offset, int nbytes, int sock){
 
     req.mem_id = src.mem_id;
 
-    printf("RM: wrote %li bytes\n", write(sock, &req, sizeof(struct nalloc_request)));
-    printf("RM: read  %li bytes\n", read(sock, dest, nbytes));
+    return write(sock, &req, sizeof(struct nalloc_request)) == sizeof(struct nalloc_request) &&
+           read(sock, dest, nbytes) == nbytes;
 }
 
 /* client end */
@@ -155,7 +155,7 @@ int main(int a, char** b){
     memset(read_buf, 0, 100);
     ash = establish_connection(b[1]);
     lnemcpy(mem, read_buf, 0, 5, ash);
-    printf("Read: \"%s\"\n", read_buf);
+    printf("read: \"%s\"\n", read_buf);
 
     ash = establish_connection(b[1]);
     nemlcpy(buf1, mem, 0, 6, ash);
@@ -163,7 +163,7 @@ int main(int a, char** b){
     memset(read_buf, 0, 100);
     ash = establish_connection(b[1]);
     lnemcpy(mem, read_buf, 0, 5, ash);
-    printf("rEad: \"%s\"\n", read_buf);
+    printf("read: \"%s\"\n", read_buf);
 
     ash = establish_connection(b[1]);
     nemlcpy(buf2, mem, 0, 6, ash);
@@ -171,7 +171,7 @@ int main(int a, char** b){
     memset(read_buf, 0, 100);
     ash = establish_connection(b[1]);
     lnemcpy(mem, read_buf, 0, 5, ash);
-    printf("reAd: \"%s\"\n", read_buf);
+    printf("read: \"%s\"\n", read_buf);
 
     ash = establish_connection(b[1]);
     nemlcpy(buf3, mem, 0, 6, ash);
@@ -179,6 +179,6 @@ int main(int a, char** b){
     memset(read_buf, 0, 100);
     ash = establish_connection(b[1]);
     lnemcpy(mem, read_buf, 0, 5, ash);
-    printf("reaD: \"%s\"\n", read_buf);
+    printf("read: \"%s\"\n", read_buf);
     return EXIT_SUCCESS;    
 }
