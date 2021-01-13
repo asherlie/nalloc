@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -Werror -Wpedantic -pthread -g
+CFLAGS=-Wall -Wextra -Werror -Wpedantic -pthread -O3
 
 H_OBJ=rc.o eval_requests.o
 H_SRC=nhost.c
