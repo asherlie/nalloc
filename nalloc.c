@@ -24,11 +24,9 @@
 
 #include "shared.h"
 
+#include "nalloc.h"
+
 /* client */
-struct nmem{
-    int count, entry_sz, mem_id;
-    char ip[20];
-};
 
 int _establish_connection(struct in_addr addr){
     struct sockaddr_in saddr;
