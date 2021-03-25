@@ -73,7 +73,8 @@ _Bool eval_nalloc_request(struct requester_cont* rc,
             /* WRITE_MEM */
             /* fprintf(stderr, "sz %i id %i index %i\n", req.sz, req.mem_id, req.index); */
             if(req.request == WRITE_MEM){
-                if(read(r->sock, mem->ptr+req.index, req.sz) != req.sz)ret = 0;
+                /*if(read(r->sock, mem->ptr+req.index, req.sz) != req.sz)ret = 0;*/
+                if(read(r->sock, mem->ptr+(req.index*req.sz), req.sz) != req.sz)ret = 0;
                 /* fprintf(stderr, "WRITE_MEM %i\n", ret); */
                 /*
                  * fprintf(stderr, "got a write request: \"%s\"\n", (char*)mem->ptr);
@@ -97,5 +98,6 @@ _Bool eval_nalloc_request(struct requester_cont* rc,
             break;
     }
     /* fputs("RETURNING\n", stderr); */
+    close(r->sock);
     return ret;
 }

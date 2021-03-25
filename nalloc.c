@@ -193,7 +193,7 @@ int main(int a, char** b){
     }
     ash = establish_connection(b[1]);
     lnemcpy(arrmem, ibuf, 0, sizeof(int)*50, ash);
-    printf("indices are%s equal\n", (memcmp(ibufcmp, ibuf, sizeof(int)*50)) ? " NOT" : "");
+    printf("INDICES ARE%s EQUAL\n", (memcmp(ibufcmp, ibuf, sizeof(int)*50)) ? " NOT" : "");
 
 
 
