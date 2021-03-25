@@ -1,0 +1,3 @@
+[submodule "abhash"]
+	path = abhash
+	url = https://github.com/asherlie/abhash
