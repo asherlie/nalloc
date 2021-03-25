@@ -135,6 +135,13 @@ _Bool lnemcpy(struct nmem src, void* dest, int offset, int nbytes, int sock){
 
 /* client end */
 
+struct test_str{
+      float x, y;
+      char str[6];
+      double z;
+      int arr[1304];
+};
+
 int main(int a, char** b){
     if(a < 2)return 0;
     signal(SIGPIPE, SIG_IGN);
@@ -144,8 +151,51 @@ int main(int a, char** b){
      * char buf[] = "hello";
      * write(ash, buf, 6);
      */
-    struct nmem mem = nalloc(20, sizeof(int), ash);
+    /*struct nmem mem = nalloc(20, sizeof(int), ash);*/
+    /*struct nmem mem = nalloc(20, sizeof(struct test_str), ash);*/
+    struct nmem mem = nalloc(1, sizeof(struct test_str), ash);
+    /*struct nmem mem = nalloc(1, 1, ash);*/
     char buf[] = "asher", buf1[] = "ASHER", buf2[] = "ETERI", buf3[] = "eteri";
+
+    struct test_str stct, against;
+    strcpy(stct.str, buf);
+    stct.x = 11.3;
+    stct.y = 1.9;
+    for(int i = 0; i < 1304; ++i)stct.arr[i] = i;
+
+    memcpy(&against, &stct, sizeof(struct test_str));
+
+    ash = establish_connection(b[1]);
+    nemlcpy(&stct, mem, 0, sizeof(struct test_str), ash);
+
+    memset(&stct, 0, sizeof(struct test_str));
+
+    ash = establish_connection(b[1]);
+    lnemcpy(mem, &stct, 0, sizeof(struct test_str), ash);
+
+    printf("%sIDENTICAL\n", (memcmp(&stct, &against, sizeof(struct test_str)) ? "NOT " : ""));
+
+
+    /* a test where we allocate a n integer array
+     * we will then iterate through it and nemlcpy with an offset
+     * to set arr[i] = i
+     * we will them lnemcpy back and check the buffer
+     */
+    ash = establish_connection(b[1]);
+    struct nmem arrmem = nalloc(1, sizeof(int)*50, ash);
+    int ibuf[50], ibufcmp[50];
+    int val;
+    for(int i = 0; i < 50; ++i){
+          val = i*231;
+          ash = establish_connection(b[1]);
+          nemlcpy(&val, arrmem, i, sizeof(int), ash);
+          ibufcmp[i] = val;
+    }
+    ash = establish_connection(b[1]);
+    lnemcpy(arrmem, ibuf, 0, sizeof(int)*50, ash);
+    printf("indices are%s equal\n", (memcmp(ibufcmp, ibuf, sizeof(int)*50)) ? " NOT" : "");
+
+
 
     ash = establish_connection(b[1]);
     nemlcpy(buf, mem, 0, 6, ash);

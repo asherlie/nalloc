@@ -83,7 +83,6 @@ void* accept_conn_th(void* null){
      * close(STDIN_FILENO);
      * close(STDOUT_FILENO);
      */
-    perror("I");
     while(1){
         if((sock = accept(lsock, &addr, &addrlen) != -1)){
             /* fputs("accepted conn", stderr); */
